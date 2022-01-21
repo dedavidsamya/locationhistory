@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/dedavidsamya/locationhistory/app"
 	//"fmt"
 	"github.com/gorilla/mux"
-	"locationhistory/app"
 	"log"
 	"net/http"
 )
