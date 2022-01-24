@@ -25,8 +25,8 @@ var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
 	// location here is going to store the Location passed by the client in the body of the request.
-	location, err := UnmarshalOrder(request)
-	fmt.Println("l. 28: location:", location, err)
+	location, err := UnmarshalLocation(request)
+	fmt.Println("location (after unmarshal):", location, err)
 	if err != nil {
 		badInput := NewError("bad request", errors.New("the format of the input is invalid"))
 		JSON(response, http.StatusBadRequest, &badInput)
@@ -42,24 +42,25 @@ func AddLocation(response http.ResponseWriter, request *http.Request) {
 	//	return
 	//}
 	orderId := vars["order_id"]
-	fmt.Println("l. 37: orders before", orders)
+	fmt.Println("orders before", orders)
 	orders[orderId] = append([]Location{*location}, orders[orderId]...)
-	fmt.Println("l. 39: orders after", orders)
+	fmt.Println("orders after", orders)
 	response.WriteHeader(http.StatusOK)
 }
 
-func UnmarshalOrder(request *http.Request) (*Location, error) {
-	//this function receives the request and returns the data the client passed in the body, in the form of a Location struct, and an error
+//this function receives the request and returns the data the client passed in the body, in the form of a Location struct, and an error
+func UnmarshalLocation(request *http.Request) (*Location, error) {
 	var location Location
+	//here body refers to the data the client passed in the body. ReadAll is going to read and "transfer" this data to the variable body.
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
-		log.Printf(" l. 53: Error when reading body of the request: %v", err)
+		log.Printf("Error when reading body of the request: %v", err)
 		return nil, err
 	}
-
+	// the unmarshal function transfers whatever is in the body variable to the location variable (which is now a pointer, so it is a specific place in memory)
 	err = json.Unmarshal(body, &location)
 	if err != nil {
-		log.Printf("l. 59: Error when unmarsahlling body of the request: %v", err)
+		log.Printf("Error when unmarsahlling body of the request: %v", err)
 		return nil, err
 	}
 
