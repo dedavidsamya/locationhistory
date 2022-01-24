@@ -26,7 +26,7 @@ type Location struct {
 var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
-	// location here is going to store the Location passed by the client in the body of the request.
+	// location here is going to store the Location passed by the client in the body of the request and unmarshalled by the UnmarshalLocation function.
 	location, err := UnmarshalLocation(request)
 	fmt.Println("location (after unmarshal):", location, err)
 	if err != nil {
@@ -68,66 +68,51 @@ func UnmarshalLocation(request *http.Request) (*Location, error) {
 }
 
 func GetLocation(response http.ResponseWriter, request *http.Request) {
-	//this function is completely wrong. The client queries a specific number of last locations for the location id.
-	// The slice orders is a map containing structs of Order linked to a string (order_id).
-	// when I retrieve orders, I am retrieving the whole map with different Orders (each one containing different locations)
-	//So instead of retrieving orders, I should be retrieving each Order.
-	//this is why I was trying to find the KEY, so I would be able to retrieve each Order by its number (the string order_id)
-
-	//the way this function is working now, it is returning the whole orders map and not only the specific element of that map
-	//that is a specific order_id (key of the map)
-
 	vars := mux.Vars(request)
-	InputOrderId := vars["order_id"]
-	order := orders[InputOrderId]
-	fmt.Println(" order before max:", order)
+	inputOrderId := vars["order_id"]
+	fmt.Println(" inputOrderId: ", inputOrderId)
 
-	//this checks if order is contained in orders
-	if v, found := orders[InputOrderId]; found {
-		fmt.Println(" found:", v)
-		max, err := strconv.Atoi(request.URL.Query().Get("max"))
-		fmt.Println("max:", max)
-		fmt.Println("length of orders: ", len(orders))
+	locations := orders[inputOrderId]
+	fmt.Println(" locations (for the order_id) before max:", locations)
+	locationsLength := len(locations)
+	fmt.Println("locationsLength", locationsLength)
 
-		if err != nil {
-			badInput := NewError("bad_request", errors.New("the format of the input is invalid"))
-			JSON(response, http.StatusBadRequest, &badInput)
-			return
-		}
-		switch {
-		case max > 0 && max > len(orders):
-			fmt.Println("order max > len", order)
-			JSON(response, http.StatusOK, order)
+	//this checks if location is contained in orders
+	if v, found := orders[inputOrderId]; found {
+		fmt.Println(" []Location{location} found in the orders slice:", v)
+	}
 
-		case max > 0 && max <= len(orders):
-			fmt.Println("order max < len", order[:max])
-			JSON(response, http.StatusOK, order[:max])
+	max, err := strconv.Atoi(request.URL.Query().Get("max"))
+	fmt.Println("max:", max)
+	if err != nil {
+		badInput := NewError("bad_request", errors.New("the format of the input is invalid"))
+		JSON(response, http.StatusBadRequest, &badInput)
+		return
+	}
+	switch {
+	case max > locationsLength:
+		fmt.Println("max > locationsLength, locations:", locations)
+		JSON(response, http.StatusOK, locations)
 
-		default:
-			badInput := NewError("bad_request", errors.New("this order does not exist"))
-			JSON(response, http.StatusBadRequest, &badInput)
-			return
-		}
+	case max > 0 && max < locationsLength:
+		fmt.Println("max < locationsLength, locations[:max]: ", locations[:max])
+		JSON(response, http.StatusOK, locations[:max])
+
+		//CASE MAX > 0 IS NOT WORKING.
+	case max < 0:
+		badInput := NewError("bad_request", errors.New("this order does not exist"))
+		JSON(response, http.StatusBadRequest, &badInput)
+		return
 	}
 }
 
 func DeleteLocations(response http.ResponseWriter, request *http.Request) {
 	vars := mux.Vars(request)
 	id := vars["order_id"]
-	fmt.Println("id: ", id)
-	//here, id is exactly what I want it to be, is the id that client passes on "order_id"
-	//this if is commented because it is the same issue at the put endpoint
-	//if id == "" {
-	//	// this is not working. When I pass an empty space on the query field,
-	//	//I still receive the output of l.105, as if my order had been deleted
-	//	//but there was no order id, so nothing to delete
-	//	badInput := NewError("bad_request", errors.New("the order number can't be empty"))
-	//	JSON(response, http.StatusBadRequest, badInput)
-	//	fmt.Println("l. 108:", vars["order_id"])
-	//} else {
+	fmt.Println("id being deleted: ", id)
 	delete(orders, id)
 	JSON(response, http.StatusOK, "Order deleted")
-	fmt.Println("l. 112: orders map: ", orders)
+	fmt.Println("orders map after deletion: ", orders)
 }
 
 func JSON(w http.ResponseWriter, code int, obj interface{}) {
