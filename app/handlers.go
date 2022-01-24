@@ -16,12 +16,12 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-type Order struct {
+type Location struct {
 	Lat float32 `json:"lat"`
 	Lng float32 `json:"lng"`
 }
 
-var orders = map[string][]Order{}
+var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
 	order, err := UnmarshalOrder(request)
@@ -42,13 +42,13 @@ func AddLocation(response http.ResponseWriter, request *http.Request) {
 	//}
 	orderId := vars["order_id"]
 	fmt.Println("l. 37: orders before", orders)
-	orders[orderId] = append([]Order{*order}, orders[orderId]...)
+	orders[orderId] = append([]Location{*order}, orders[orderId]...)
 	fmt.Println("l. 39: orders after", orders)
 	response.WriteHeader(http.StatusOK)
 }
 
-func UnmarshalOrder(request *http.Request) (*Order, error) {
-	var order Order
+func UnmarshalOrder(request *http.Request) (*Location, error) {
+	var order Location
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		log.Printf(" l. 53: Error when reading body of the request: %v", err)
