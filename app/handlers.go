@@ -24,8 +24,8 @@ type Location struct {
 var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
-	order, err := UnmarshalOrder(request)
-	fmt.Println("l. 28: order:", order, err)
+	location, err := UnmarshalOrder(request)
+	fmt.Println("l. 28: location:", location, err)
 	if err != nil {
 		badInput := NewError("bad request", errors.New("the format of the input is invalid"))
 		JSON(response, http.StatusBadRequest, &badInput)
@@ -35,14 +35,14 @@ func AddLocation(response http.ResponseWriter, request *http.Request) {
 	//this is commented because it should not exist. instead
 	//of checking if empty string, I should trim strings received as input
 	//if vars["order_id"] == " " {
-	//	emptyString := NewError("bad request", errors.New("order number can't be empty"))
+	//	emptyString := NewError("bad request", errors.New("location number can't be empty"))
 	//	JSON(response, http.StatusBadRequest, &emptyString)
 	//	fmt.Println("l. 45: empty string as order_id")
 	//	return
 	//}
 	orderId := vars["order_id"]
 	fmt.Println("l. 37: orders before", orders)
-	orders[orderId] = append([]Location{*order}, orders[orderId]...)
+	orders[orderId] = append([]Location{*location}, orders[orderId]...)
 	fmt.Println("l. 39: orders after", orders)
 	response.WriteHeader(http.StatusOK)
 }
