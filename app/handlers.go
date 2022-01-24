@@ -21,6 +21,8 @@ type Location struct {
 	Lng float32 `json:"lng"`
 }
 
+// orders is a map that connects a key (order_id) to a slice of Location structs.
+//so each order id is going to have a set of different {latitude, longitude} objects
 var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
@@ -32,19 +34,17 @@ func AddLocation(response http.ResponseWriter, request *http.Request) {
 		JSON(response, http.StatusBadRequest, &badInput)
 		return
 	}
+	//here, vars is going to contain every piece of data the client sent in the URL of the request
 	vars := mux.Vars(request)
-	//this is commented because it should not exist. instead
-	//of checking if empty string, I should trim strings received as input
-	//if vars["order_id"] == " " {
-	//	emptyString := NewError("bad request", errors.New("location number can't be empty"))
-	//	JSON(response, http.StatusBadRequest, &emptyString)
-	//	fmt.Println("l. 45: empty string as order_id")
-	//	return
-	//}
 	orderId := vars["order_id"]
-	fmt.Println("orders before", orders)
+	fmt.Println("orderId: ", orderId)
+	fmt.Println("orders before appending", orders)
+	//here a specific struct of Location (the one retrieved from the body of the request and unmarshalled) is appended to the orders map, "inside" the specific orderId key retrieved from the URL.
+	//normally the syntax for appending to a map is map["key"] = append(map["key"], object_to_be_appended)
+	//but I inverted the order of the parameters of append to actually prepend instead of appending
+	//I want the object Location added last to always go to the beginning of the order slice, because I need to retrieve the objects by descending order (last added first)
 	orders[orderId] = append([]Location{*location}, orders[orderId]...)
-	fmt.Println("orders after", orders)
+	fmt.Println("orders after appending", orders)
 	response.WriteHeader(http.StatusOK)
 }
 
