@@ -24,6 +24,7 @@ type Location struct {
 var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
+	// location here is going to store the Location passed by the client in the body of the request.
 	location, err := UnmarshalOrder(request)
 	fmt.Println("l. 28: location:", location, err)
 	if err != nil {
@@ -48,20 +49,21 @@ func AddLocation(response http.ResponseWriter, request *http.Request) {
 }
 
 func UnmarshalOrder(request *http.Request) (*Location, error) {
-	var order Location
+	//this function receives the request and returns the data the client passed in the body, in the form of a Location struct, and an error
+	var location Location
 	body, err := ioutil.ReadAll(request.Body)
 	if err != nil {
 		log.Printf(" l. 53: Error when reading body of the request: %v", err)
 		return nil, err
 	}
 
-	err = json.Unmarshal(body, &order)
+	err = json.Unmarshal(body, &location)
 	if err != nil {
 		log.Printf("l. 59: Error when unmarsahlling body of the request: %v", err)
 		return nil, err
 	}
 
-	return &order, err
+	return &location, err
 }
 
 func GetLocation(response http.ResponseWriter, request *http.Request) {
