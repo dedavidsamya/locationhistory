@@ -1,4 +1,4 @@
-package app
+package http
 
 import (
 	"encoding/json"
@@ -11,19 +11,15 @@ import (
 	"strconv"
 )
 
+const Limit int = 100
+
 type Error struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
 
-type Location struct {
-	Lat float32 `json:"lat"`
-	Lng float32 `json:"lng"`
-}
-
 // orders is a map that connects a key (order_id) to a slice of Location structs.
 //so each order id is going to have a set of different {latitude, longitude} objects
-var orders = map[string][]Location{}
 
 func AddLocation(response http.ResponseWriter, request *http.Request) {
 	// location here is going to store the Location passed by the client in the body of the request and unmarshalled by the UnmarshalLocation function.
@@ -82,27 +78,42 @@ func GetLocation(response http.ResponseWriter, request *http.Request) {
 		fmt.Println(" []Location{location} found in the orders slice:", v)
 	}
 
-	max, err := strconv.Atoi(request.URL.Query().Get("max"))
+	// if max exists
+	queries := request.URL.Query()
+	maxQuery := queries.Get("max")
+
+	max, err := strconv.Atoi(maxQuery)
+	if maxQuery == "" {
+		max = Limit
+	}
 	fmt.Println("max:", max)
 	if err != nil {
 		badInput := NewError("bad_request", errors.New("the format of the input is invalid"))
 		JSON(response, http.StatusBadRequest, &badInput)
 		return
 	}
+
 	switch {
+	//add a case with a limit of locations returned
 	case max > locationsLength:
 		fmt.Println("max > locationsLength, locations:", locations)
-		JSON(response, http.StatusOK, locations)
+		JSON(response, http.StatusOK, locations[:Limit])
+		break
 
-	case max > 0 && max < locationsLength:
+	case max >= 1 && max < locationsLength:
 		fmt.Println("max < locationsLength, locations[:max]: ", locations[:max])
 		JSON(response, http.StatusOK, locations[:max])
+		break
 
-		//CASE MAX > 0 IS NOT WORKING.
-	case max < 0:
+	case max < 1:
 		badInput := NewError("bad_request", errors.New("this order does not exist"))
 		JSON(response, http.StatusBadRequest, &badInput)
-		return
+		break
+
+	default:
+		badInput := NewError("bad_request", errors.New("this order does not exist"))
+		JSON(response, http.StatusBadRequest, &badInput)
+		break
 	}
 }
 

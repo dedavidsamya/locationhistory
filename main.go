@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/dedavidsamya/locationhistory/app"
+	http2 "github.com/dedavidsamya/locationhistory/app/http"
+
 	//"fmt"
 	"github.com/gorilla/mux"
 	"log"
@@ -14,9 +15,9 @@ func main() {
 	router := mux.NewRouter()
 
 	// define routes
-	router.HandleFunc("/location/{order_id}", app.AddLocation).Methods("PUT")
-	router.HandleFunc("/location/{order_id}", app.GetLocation).Methods("GET")
-	router.HandleFunc("/location/{order_id}", app.DeleteLocations).Methods("DELETE")
+	router.HandleFunc("/location/{order_id}", http2.AddLocation).Methods("PUT")
+	router.HandleFunc("/location/{order_id}", http2.GetLocation).Methods("GET")
+	router.HandleFunc("/location/{order_id}", http2.DeleteLocations).Methods("DELETE")
 	// starting server
 	error := http.ListenAndServe("localhost:8000", router)
 	if error != nil {
