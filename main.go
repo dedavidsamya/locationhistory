@@ -16,8 +16,8 @@ func main() {
 
 	// define routes
 	router.HandleFunc("/location/{order_id}", http2.AddLocation).Methods("PUT")
-	router.HandleFunc("/location/{order_id}", http2.GetLocation).Methods("GET")
-	router.HandleFunc("/location/{order_id}", http2.DeleteLocations).Methods("DELETE")
+	//router.HandleFunc("/location/{order_id}", http2.GetLocation).Methods("GET")
+	//router.HandleFunc("/location/{order_id}", http2.DeleteLocations).Methods("DELETE")
 	// starting server
 	error := http.ListenAndServe("localhost:8000", router)
 	if error != nil {

@@ -14,7 +14,7 @@ type Order struct {
 	Locations []Location
 }
 
-var orders = map[string]Order{}
+var Orders = map[string]Order{}
 
 func CreateOrder(id string) (*Order, error) {
 	if id == "" {
@@ -56,7 +56,7 @@ func GetOrder(id string) (*Order, error) {
 	if id == "" {
 		return nil, errors.New("GetOrder: id is empty")
 	}
-	o := orders[id]
+	o := Orders[id]
 
 	if o.ID == "" {
 		return nil, errors.New("GetOrder: order does not exist")
@@ -66,7 +66,7 @@ func GetOrder(id string) (*Order, error) {
 
 func AddLocation(id string, location Location) error {
 	if id == "" {
-		return errors.New("InsertLocation: id is empty")
+		return errors.New("AddLocation: id is empty")
 	}
 
 	order, err := GetOrder(id)
@@ -77,7 +77,7 @@ func AddLocation(id string, location Location) error {
 	order.Locations = append(order.Locations, location)
 	err = UpdateOrder(order)
 	if err != nil {
-		return errors.New("InsertLocation: UpdateOrder returned an error")
+		return errors.New("AddLocation: UpdateOrder returned an error")
 	}
 	return nil
 }
@@ -87,6 +87,6 @@ func insertOrder(order *Order) error {
 		return errors.New("insertOrder: order is nil")
 	}
 
-	orders[order.ID] = *order
+	Orders[order.ID] = *order
 	return nil
 }
